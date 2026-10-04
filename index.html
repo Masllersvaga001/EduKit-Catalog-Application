@@ -1,26 +1,370 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduKit Catalog</title>
-    <link rel="stylesheet" href="src/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>EduKit — Форум студенческих приложений</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.ico">
+  <meta name="description" content="Форум студенческих приложений. Находите, обсуждайте и голосуйте за лучшие сервисы для учёбы и жизни.">
+  <meta property="og:title" content="EduKit — Форум студенческих приложений">
+  <meta property="og:description" content="Находите, обсуждайте и голосуйте за лучшие сервисы для учёбы и жизни.">
+  <meta property="og:image" content="https://edukit.space/favicon.ico">
+  <meta property="og:url" content="https://edukit.space">
+  <meta property="og:type" content="website">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>EduKit Catalog</h1>
-        <nav>
-            <a href="#">Главная</a>
-            <a href="#">Каталог</a>
-            <a href="#">О нас</a>
-        </nav>
-    </header>
-    <main>
-        <section class="hero">
-            <h2>Образовательные приложения</h2>
-            <p>Лучшие инструменты для обучения</p>
-        </section>
-    </main>
-    <script src="src/js/main.js"></script>
+
+<!-- TOP NAV -->
+<nav class="nav">
+  <a class="logo" href="#">Edu<span>Kit</span></a>
+  <button class="nav-btn active" id="btn-catalog"     onclick="showPage('catalog')">🗂 <span id="tx-catalog">Каталог</span></button>
+  <button class="nav-btn"        id="btn-discussions" onclick="showPage('discussions')">💬 <span id="tx-disc">Обсуждения</span></button>
+  <button class="nav-btn"        id="btn-ratings"     onclick="showPage('ratings')">🏆 <span id="tx-rat">Рейтинг</span></button>
+  <button class="nav-btn"        id="btn-collections" onclick="showPage('collections')">📚 <span id="tx-coll">Коллекции</span></button>
+  <button class="nav-btn hidden" id="btn-moderation"  onclick="showPage('moderation')">🛡 <span id="tx-mod" data-tx="moderationNav">Модерация</span></button>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" data-tx-title="themeTitle" title="Тема">🌙</button>
+  <button class="lang-btn" id="btn-lang" onclick="toggleLang()" data-tx-title="langTitle" title="Сменить язык">🇷🇺 RU</button>
+  <div class="user-badge guest" id="nav-badge">Г</div>
+  <span class="nav-user" id="nav-username">Гость</span>
+  <button class="logout-btn" id="nav-auth-btn" onclick="handleNavAuth()">🔑 Войти</button>
+</nav>
+
+<!-- BOTTOM TAB BAR (mobile) -->
+<div class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab-btn active" id="tab-catalog"     onclick="showPage('catalog')"><span class="tab-icon">🗂</span><span id="tx-tab-catalog">Каталог</span></button>
+    <button class="tab-btn" id="tab-discussions" onclick="showPage('discussions')"><span class="tab-icon">💬</span><span id="tx-tab-disc">Обсуждения</span></button>
+    <button class="tab-btn" id="tab-ratings"     onclick="showPage('ratings')"><span class="tab-icon">🏆</span><span id="tx-tab-rat">Рейтинг</span></button>
+    <button class="tab-btn" id="tab-collections" onclick="showPage('collections')"><span class="tab-icon">📚</span><span id="tx-tab-coll">Сборники</span></button>
+    <button class="tab-btn" id="tab-profile"     onclick="handleMobileProfile()"><span class="tab-icon" id="tab-profile-icon">👤</span><span id="tx-tab-profile">Профиль</span></button>
+    <button class="tab-btn hidden" id="tab-moderation" onclick="showPage('moderation')"><span class="tab-icon">🛡</span><span data-tx="moderationNav">Модерация</span></button>
+  </div>
+</div>
+
+<!-- ===== CATALOG ===== -->
+<div id="page-catalog">
+  <div class="hero">
+    <div class="hero-title">🗂 <span id="tx-heroTitle">Форум студенческих приложений</span></div>
+    <p class="hero-sub" id="tx-heroSub">Находите, обсуждайте и голосуйте за лучшие сервисы для учёбы и жизни.</p>
+    <div class="search-row">
+      <input class="search-input" id="search-input" placeholder="Поиск приложений..." oninput="renderApps()">
+      <button class="search-btn">🔍 <span id="tx-searchBtn">Найти</span></button>
+    </div>
+  </div>
+  <div class="main">
+    <div id="recently-viewed-block"></div>
+    <div class="toolbar-row">
+      <button class="suggest-btn" onclick="openSuggest()">✦ <span id="tx-suggestBtn">Предложить приложение</span></button>
+      <select class="sort-select" id="sort-select" onchange="renderApps()">
+        <option value="votes" data-tx="sortVotes">🔥 По голосам</option>
+        <option value="new" data-tx="sortNewOpt">🆕 Новые</option>
+        <option value="alpha" data-tx="sortAlpha">🔤 А–Я</option>
+      </select>
+    </div>
+    <div class="tag-filter-row" id="tag-filter-row"></div>
+    <div class="cat-row" id="cat-row"></div>
+    <div id="apps-list"></div>
+  </div>
+</div>
+
+<!-- ===== DISCUSSIONS ===== -->
+<div id="page-discussions" class="hidden">
+  <div class="section-hero hero-blue">
+    <div class="section-hero-title">💬 <span id="tx-discTitle">Обсуждения</span></div>
+    <div class="section-hero-sub" id="tx-discSub">Последние комментарии и дискуссии сообщества</div>
+  </div>
+  <div class="main" id="discussions-list"></div>
+</div>
+
+<!-- ===== RATINGS ===== -->
+<div id="page-ratings" class="hidden">
+  <div class="section-hero hero-gold">
+    <div class="section-hero-title">🏆 <span id="tx-ratTitle">Топ приложений</span></div>
+    <div class="section-hero-sub" id="tx-ratSub">Самые популярные сервисы по версии студентов</div>
+  </div>
+  <div class="main"><div class="rank-card" id="rank-list"></div></div>
+</div>
+
+<!-- ===== COLLECTIONS ===== -->
+<div id="page-collections" class="hidden">
+  <div class="section-hero hero-teal">
+    <div class="section-hero-title">📚 <span id="tx-collTitle">Коллекции</span></div>
+    <div class="section-hero-sub" id="tx-collSub">Авторские подборки приложений от сообщества</div>
+  </div>
+  <div class="main">
+    <button class="suggest-btn" onclick="openCreateCollection()" style="margin-top:18px">＋ <span id="tx-newColl">Создать коллекцию</span></button>
+    <div id="collections-list"></div>
+  </div>
+</div>
+
+<!-- ===== USER PROFILE PAGE ===== -->
+<div id="page-profile" class="hidden">
+  <div class="main" id="profile-page-content" style="padding-top:20px"></div>
+</div>
+
+<!-- ===== MODERATION PAGE (только admin/moderator) ===== -->
+<div id="page-moderation" class="hidden">
+  <div class="section-hero hero-blue">
+    <div class="section-hero-title" data-tx="moderationTitle">🛡 Модерация комментариев</div>
+    <div class="section-hero-sub" data-tx="moderationSub">Комментарии, отмеченные автофильтром — требуют решения</div>
+  </div>
+  <div class="main" id="moderation-list"></div>
+</div>
+
+<!-- ===== APP MODAL ===== -->
+<div class="overlay hidden" id="app-modal" onclick="closeAppModalOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modal-appname"></div>
+    <div id="modal-tags-row" style="margin-bottom:8px"></div>
+    <div class="section-box">
+      <div class="section-box-title" id="tx-links">🔗 Ссылки:</div>
+      <a id="modal-link" href="#" target="_blank" class="modal-ext-link">Официальный сайт 🔗</a>
+    </div>
+    <div class="info-row"><span class="info-label" id="tx-cat">Категория </span><span id="modal-category"></span></div>
+    <div class="info-row"><span class="info-label" id="tx-desc">Описание </span><span id="modal-desc"></span></div>
+    <div class="info-row"><span class="info-label" id="tx-pc">Плюсы / Минусы </span><span id="modal-proscons"></span></div>
+    <div class="info-row"><span class="info-label" id="tx-alts2">Альтернативы </span><span id="modal-alts"></span></div>
+    <div class="info-row"><span class="info-label" id="tx-sub2">Предложил </span><span id="modal-submittedby"></span></div>
+    <div class="info-row">🔥 <span id="tx-votesLabel">голосов:</span> <b id="modal-votes"></b></div>
+    <button class="secondary-action-btn" data-tx="addToCollBtn" onclick="openAddToCollection()">📚 Добавить в коллекцию</button>
+    <button class="mod-btn mod-btn-edit hidden" id="modal-mod-edit-btn" style="width:100%;margin-top:8px;padding:10px" onclick="openEditAppModal(getApp(selectedAppId))"><span data-tx="editAppBtn">✏️ Редактировать карточку (модератор)</span></button>
+    <button class="mod-btn mod-btn-delete hidden" id="modal-mod-delete-btn" style="width:100%;margin-top:8px;padding:10px" onclick="deleteAppCard(selectedAppId)"><span data-tx="deleteAppBtn">🗑 Удалить карточку (модератор)</span></button>
+    <div class="section-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div class="section-box-title" style="margin:0">💬 <span id="tx-commentsLabel">Комментарии</span></div>
+        <select class="sort-select" id="comment-sort" onchange="resortComments()" style="font-size:12px;padding:4px 10px">
+          <option value="new" data-tx="commentSortNew">🕐 Новые</option>
+          <option value="old" data-tx="commentSortOld">🕰 Старые</option>
+          <option value="likes" data-tx="commentSortLikes">👍 По лайкам</option>
+        </select>
+      </div>
+      <div id="modal-comments" style="margin-top:8px"></div>
+      <div id="comment-input-area"></div>
+    </div>
+    <button class="close-btn" onclick="closeModal()" id="tx-close">Закрыть</button>
+  </div>
+</div>
+
+<!-- ===== AUTH MODAL (login + register tabs) ===== -->
+<div class="overlay hidden" id="auth-modal" onclick="closeAuthOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login-btn"    onclick="switchAuthTab('login')" data-tx="authLoginTab">Вход</button>
+      <button class="auth-tab"        id="tab-register-btn" onclick="switchAuthTab('register')" data-tx="authRegisterTab">Регистрация</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="auth-login-panel">
+      <div class="login-err hidden" id="login-err"></div>
+      <input class="f-input" id="login-user" data-tx-ph="usernameOrEmail" placeholder="Имя пользователя или email"
+             autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="pw-field">
+        <input class="f-input" type="password" id="login-pass" data-tx-ph="password" placeholder="Пароль"
+               autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button type="button" class="pw-toggle" aria-label="Показать пароль" data-tx-aria="showPassword" onclick="togglePasswordVisibility('login-pass', this)">
+          <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.7 19.7 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a19.7 19.7 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+      <button class="primary-btn" data-tx="loginBtn" onclick="doLogin()">🔑 Войти</button>
+      <button class="auth-link-btn" data-tx="forgotPassword" onclick="switchAuthTab('forgot')">Забыли пароль?</button>
+      <div class="oauth-divider"><span data-tx="orLoginVia">или войти через</span></div>
+      <div class="oauth-row">
+        <button class="oauth-btn google"  onclick="oauthLogin('google')"><span class="oauth-icon">G</span> Google</button>
+        <button class="oauth-btn yandex"  onclick="oauthLogin('yandex')"><span class="oauth-icon">Я</span> Яндекс</button>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="auth-register-panel" class="hidden">
+      <div class="login-err hidden" id="reg-err"></div>
+      <input class="f-input" id="reg-username"  data-tx-ph="usernamePh" placeholder="Имя пользователя *"
+             autocomplete="username">
+      <input class="f-input" type="email" id="reg-email" data-tx-ph="emailPh" placeholder="Email *"
+             autocomplete="email">
+      <div class="pw-field">
+        <input class="f-input" type="password" id="reg-pass" data-tx-ph="passwordMin" placeholder="Пароль (мин. 6 символов) *"
+               autocomplete="new-password">
+        <button type="button" class="pw-toggle" aria-label="Показать пароль" data-tx-aria="showPassword" onclick="togglePasswordVisibility('reg-pass', this)">
+          <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.7 19.7 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a19.7 19.7 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+      <div class="pw-field">
+        <input class="f-input" type="password" id="reg-pass2" data-tx-ph="repeatPassword" placeholder="Повторите пароль *"
+               autocomplete="new-password">
+        <button type="button" class="pw-toggle" aria-label="Показать пароль" data-tx-aria="showPassword" onclick="togglePasswordVisibility('reg-pass2', this)">
+          <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.7 19.7 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a19.7 19.7 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+      <!-- Student fields -->
+      <div class="reg-section-title" data-tx="studySectionOpt">🎓 Учёба (необязательно)</div>
+      <input class="f-input" id="reg-university" data-tx-ph="universityPh" placeholder="Университет / институт">
+      <input class="f-input" id="reg-faculty"    data-tx-ph="facultyPh" placeholder="Факультет / направление">
+      <input class="f-input" id="reg-course"     data-tx-ph="coursePh" placeholder="Курс (1–6)">
+      <input class="f-input" id="reg-city"       data-tx-ph="cityPh" placeholder="Город">
+      <button class="primary-btn" data-tx="registerBtn" onclick="doRegister()">✅ Зарегистрироваться</button>
+      <div class="oauth-divider"><span data-tx="orViaSocial">или через соцсети</span></div>
+      <div class="oauth-row">
+        <button class="oauth-btn google" onclick="oauthLogin('google')"><span class="oauth-icon">G</span> Google</button>
+        <button class="oauth-btn yandex" onclick="oauthLogin('yandex')"><span class="oauth-icon">Я</span> Яндекс</button>
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div id="auth-forgot-panel" class="hidden">
+      <div class="login-err hidden" id="forgot-err"></div>
+      <div class="login-ok hidden" id="forgot-ok"></div>
+      <p style="font-size:13px;color:var(--textL);margin:0 0 10px" data-tx="forgotIntro">Введите email, указанный при регистрации — мы отправим на него ссылку для восстановления доступа.</p>
+      <input class="f-input" type="email" id="forgot-email" data-tx-ph="emailPh2" placeholder="Email"
+             autocomplete="email" onkeydown="if(event.key==='Enter')doRequestPasswordReset()">
+      <button class="primary-btn" id="forgot-submit-btn" data-tx="sendLinkBtn" onclick="doRequestPasswordReset()">✉️ Отправить ссылку</button>
+      <button class="auth-link-btn" data-tx="backToLogin" onclick="switchAuthTab('login')">← Назад ко входу</button>
+    </div>
+
+    <!-- SET NEW PASSWORD (по ссылке из письма) -->
+    <div id="auth-reset-panel" class="hidden">
+      <div class="login-err hidden" id="reset-err"></div>
+      <p style="font-size:13px;color:var(--textL);margin:0 0 10px" data-tx="resetIntro">Придумайте новый пароль для входа.</p>
+      <div class="pw-field">
+        <input class="f-input" type="password" id="reset-pass"  data-tx-ph="newPasswordPh" placeholder="Новый пароль (мин. 6 символов)"
+               autocomplete="new-password">
+        <button type="button" class="pw-toggle" aria-label="Показать пароль" data-tx-aria="showPassword" onclick="togglePasswordVisibility('reset-pass', this)">
+          <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.7 19.7 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a19.7 19.7 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+      <div class="pw-field">
+        <input class="f-input" type="password" id="reset-pass2" data-tx-ph="repeatNewPasswordPh" placeholder="Повторите новый пароль"
+               autocomplete="new-password">
+        <button type="button" class="pw-toggle" aria-label="Показать пароль" data-tx-aria="showPassword" onclick="togglePasswordVisibility('reset-pass2', this)">
+          <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.7 19.7 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a19.7 19.7 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+      <button class="primary-btn" id="reset-submit-btn" data-tx="saveNewPasswordBtn" onclick="doResetPassword()">🔑 Сохранить новый пароль</button>
+    </div>
+
+    <button class="primary-btn secondary" data-tx="close" onclick="closeAuthModal()" style="margin-top:6px">Закрыть</button>
+  </div>
+</div>
+
+<!-- ===== EDIT PROFILE MODAL ===== -->
+<div class="overlay hidden" id="edit-profile-modal" onclick="closeEditProfileOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" data-tx="editProfileTitle">✏️ Редактировать профиль</div>
+    <div class="avatar-edit-row">
+      <div class="avatar-lg" id="edit-avatar-preview" style="cursor:pointer;overflow:hidden;padding:0;position:relative" onclick="triggerAvatarUpload()" data-tx-title="uploadPhotoHint" title="Нажмите чтобы загрузить фото">
+        N
+        <div class="avatar-upload-hint">📷</div>
+      </div>
+      <div>
+        <button class="avatar-upload-btn" data-tx="uploadPhotoBtn" onclick="triggerAvatarUpload()">📷 Загрузить фото</button>
+        <div style="font-size:11px;color:var(--textL);margin-bottom:6px" data-tx="orChooseColor">или выбери цвет:</div>
+        <div class="avatar-color-row" id="avatar-color-row"></div>
+      </div>
+    </div>
+    <input class="f-input" id="ep-displayname" data-tx-ph="displayNamePh" placeholder="Отображаемое имя">
+    <input class="f-input" id="ep-bio"         data-tx-ph="bioPh" placeholder="О себе (краткое описание)">
+    <div class="reg-section-title" data-tx="studySection">🎓 Учёба</div>
+    <input class="f-input" id="ep-university"  data-tx-ph="universityPh" placeholder="Университет / институт">
+    <input class="f-input" id="ep-faculty"     data-tx-ph="facultyPh" placeholder="Факультет / направление">
+    <input class="f-input" id="ep-specialty"   data-tx-ph="specialtyPh" placeholder="Специальность">
+    <input class="f-input" id="ep-course"      data-tx-ph="coursePh" placeholder="Курс (1–6)">
+    <input class="f-input" id="ep-city"        data-tx-ph="cityPh" placeholder="Город">
+    <input class="f-input" id="ep-tg"          data-tx-ph="tgPh" placeholder="Telegram (@username)">
+    <input class="f-input" id="ep-vk"          data-tx-ph="vkPh" placeholder="VK (ссылка или @id)">
+    <div class="reg-section-title" data-tx="settingsSection">⚙️ Настройки</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="theme-opt-btn" id="ep-theme-light" data-tx="themeLight" onclick="setTheme('light')">☀️ Светлая</button>
+      <button class="theme-opt-btn" id="ep-theme-dark"  data-tx="themeDark" onclick="setTheme('dark')">🌙 Тёмная</button>
+      <button class="theme-opt-btn" id="ep-theme-sys"   data-tx="themeAuto" onclick="setTheme('system')">⚙️ Авто</button>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;font-size:14px">
+      <input type="checkbox" id="ep-digest" style="width:18px;height:18px">
+      <span data-tx="weeklyDigest">📧 Еженедельный дайджест на email</span>
+    </label>
+    <button class="primary-btn" data-tx="saveBtn" onclick="saveProfile()">💾 Сохранить</button>
+    <button class="primary-btn secondary" data-tx="cancel" onclick="document.getElementById('edit-profile-modal').classList.add('hidden')">Отмена</button>
+  </div>
+</div>
+
+<!-- ===== SUGGEST APP MODAL ===== -->
+<div class="overlay hidden" id="suggest-modal" onclick="closeSuggestOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">✦ <span id="tx-suggestTitle">Предложить приложение</span></div>
+    <input  class="f-input"   id="sug-name" data-tx-ph="suggestNamePh" placeholder="Название приложения *">
+    <select class="f-select"  id="sug-cat"></select>
+    <textarea class="f-textarea" id="sug-desc" data-tx-ph="suggestDescPh" placeholder="Описание приложения *"></textarea>
+    <input  class="f-input"   id="sug-alts"  data-tx-ph="suggestAltsPh" placeholder="Альтернативы (через запятую)">
+    <input  class="f-input"   id="sug-pros"  data-tx-ph="suggestProsPh" placeholder="Плюсы">
+    <input  class="f-input"   id="sug-cons"  data-tx-ph="suggestConsPh" placeholder="Минусы">
+    <input  class="f-input"   id="sug-link"  data-tx-ph="suggestLinkPh" placeholder="Ссылка на сайт">
+    <input  class="f-input"   id="sug-tags"  data-tx-ph="suggestTagsPh" placeholder="Теги: #free #mobile #openSource">
+    <button class="primary-btn" onclick="submitSuggest()">📋 <span id="tx-sendMod">Отправить на модерацию</span></button>
+    <button class="primary-btn secondary" onclick="document.getElementById('suggest-modal').classList.add('hidden')"><span id="tx-cancel">Отмена</span></button>
+  </div>
+</div>
+
+<!-- ===== EDIT APP MODAL (moderator only) ===== -->
+<div class="overlay hidden" id="edit-app-modal" onclick="closeEditAppOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" data-tx="editAppModalTitle">✏️ Редактировать приложение</div>
+    <input  class="f-input"   id="edit-app-name" data-tx-ph="suggestNamePh" placeholder="Название приложения *">
+    <select class="f-select"  id="edit-app-cat"></select>
+    <p class="edit-bilingual-hint" data-tx="editBilingualHint">Можно заполнить только один язык — второй переведётся автоматически при сохранении.</p>
+    <textarea class="f-textarea" id="edit-app-desc-ru" data-tx-ph="editDescRuPh" placeholder="Описание (RU) *"></textarea>
+    <textarea class="f-textarea" id="edit-app-desc-en" data-tx-ph="editDescEnPh" placeholder="Описание (EN)"></textarea>
+    <input  class="f-input"   id="edit-app-pros-ru" data-tx-ph="editProsRuPh" placeholder="Плюсы (RU)">
+    <input  class="f-input"   id="edit-app-pros-en" data-tx-ph="editProsEnPh" placeholder="Плюсы (EN)">
+    <input  class="f-input"   id="edit-app-cons-ru" data-tx-ph="editConsRuPh" placeholder="Минусы (RU)">
+    <input  class="f-input"   id="edit-app-cons-en" data-tx-ph="editConsEnPh" placeholder="Минусы (EN)">
+    <input  class="f-input"   id="edit-app-alts" data-tx-ph="suggestAltsPh" placeholder="Альтернативы (через запятую)">
+    <input  class="f-input"   id="edit-app-link" data-tx-ph="suggestLinkPh" placeholder="Ссылка на сайт">
+    <input  class="f-input"   id="edit-app-tags" data-tx-ph="suggestTagsPh" placeholder="Теги: #free #mobile #openSource">
+    <button class="primary-btn" data-tx="saveBtn" onclick="submitEditApp()">💾 Сохранить</button>
+    <button class="primary-btn secondary" data-tx="cancel" onclick="document.getElementById('edit-app-modal').classList.add('hidden')">Отмена</button>
+  </div>
+</div>
+
+<!-- ===== CREATE COLLECTION MODAL ===== -->
+<div class="overlay hidden" id="create-coll-modal" onclick="closeCreateCollOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" data-tx="newCollTitle">📚 Новая коллекция</div>
+    <input  class="f-input"   id="coll-name" data-tx-ph="collNamePh" placeholder="Название коллекции *">
+    <textarea class="f-textarea" id="coll-desc" data-tx-ph="collDescPh" placeholder="Описание (необязательно)"></textarea>
+    <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-size:14px">
+      <input type="checkbox" id="coll-public" checked style="width:18px;height:18px">
+      <span data-tx="publicCollLabel">Публичная коллекция</span>
+    </label>
+    <button class="primary-btn" data-tx="createBtn" onclick="submitCreateCollection()">Создать</button>
+    <button class="primary-btn secondary" data-tx="cancel" onclick="document.getElementById('create-coll-modal').classList.add('hidden')">Отмена</button>
+  </div>
+</div>
+
+<!-- ===== ADD TO COLLECTION MODAL ===== -->
+<div class="overlay hidden" id="add-coll-modal" onclick="closeAddCollOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" data-tx="addToCollTitle">📚 Добавить в коллекцию</div>
+    <div id="add-coll-list"></div>
+    <button class="primary-btn secondary" data-tx="close" onclick="document.getElementById('add-coll-modal').classList.add('hidden')" style="margin-top:8px">Закрыть</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast hidden" id="toast">
+  <span id="toast-text"></span>
+  <button onclick="document.getElementById('toast').classList.add('hidden')" style="background:none;border:none;cursor:pointer;color:inherit;font-size:16px;margin-left:8px">✕</button>
+</div>
+
+
+<input type="file" id="avatar-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(this)">
+<script src="app.js"></script>
 </body>
 </html>
