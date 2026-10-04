@@ -1,1 +1,1 @@
-# EduKit-Catalog-Application-frontend-
+# EduKit-Catalog-Application
